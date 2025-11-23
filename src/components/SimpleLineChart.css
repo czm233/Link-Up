@@ -1,0 +1,44 @@
+.chart-container {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.chart-title {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: #bbb;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.chart-svg {
+    overflow: visible;
+}
+
+.chart-dot {
+    transition: r 0.2s;
+    cursor: pointer;
+}
+
+.chart-dot:hover {
+    r: 5;
+}
+
+.chart-container.empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0,0,0,0.1);
+    border: 1px dashed #444;
+}
+
+.no-data {
+    color: #666;
+    font-style: italic;
+    font-size: 0.8rem;
+}
+

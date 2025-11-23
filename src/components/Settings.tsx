@@ -4,9 +4,11 @@ import './Settings.css';
 
 interface SettingsProps {
     onBack: () => void;
+    tileSize: number;
+    onTileSizeChange: (size: number) => void;
 }
 
-export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
+export const Settings: React.FC<SettingsProps> = ({ onBack, tileSize, onTileSizeChange }) => {
     const [settings, setSettings] = useState(audioManager.getSettings());
 
     const handleFileChange = (key: keyof typeof settings, file: File) => {
@@ -48,31 +50,54 @@ export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
         <div className="settings-container">
             <div className="settings-header">
                 <button onClick={onBack}>← Back</button>
-                <h2>Audio Settings</h2>
+                <h2>Settings</h2>
             </div>
 
-            <div className="settings-list">
-                {Object.keys(settings).map((key) => (
-                    <div key={key} className="setting-item">
-                        <span className="setting-label">{key.toUpperCase()}</span>
-                        <div className="setting-controls">
-                            <label className="upload-btn">
-                                Upload
-                                <input
-                                    type="file"
-                                    accept="audio/*"
-                                    onChange={(e) => e.target.files?.[0] && handleFileChange(key as any, e.target.files[0])}
-                                    style={{ display: 'none' }}
-                                />
-                            </label>
-                            {settings[key as keyof typeof settings] && (
-                                <button onClick={() => handleClear(key as any)} className="clear-btn">Clear</button>
-                            )}
-                            <button onClick={() => playPreview(key)} className="preview-btn">▶️</button>
-                        </div>
-                        <span className="status">{settings[key as keyof typeof settings] ? 'Custom' : 'Default'}</span>
+            <div className="settings-section">
+                <h3>Visual Settings</h3>
+                <div className="setting-item">
+                    <span className="setting-label">Tile Size: {tileSize}px</span>
+                    <div className="setting-controls slider-container">
+                        <input 
+                            type="range" 
+                            min="30" 
+                            max="80" 
+                            value={tileSize} 
+                            onChange={(e) => onTileSizeChange(parseInt(e.target.value, 10))}
+                            className="slider"
+                        />
                     </div>
-                ))}
+                    <div className="preview-tile" style={{ width: tileSize, height: tileSize }}>
+                        🍎
+                    </div>
+                </div>
+            </div>
+
+            <div className="settings-section">
+                <h3>Audio Settings</h3>
+                <div className="settings-list">
+                    {Object.keys(settings).map((key) => (
+                        <div key={key} className="setting-item">
+                            <span className="setting-label">{key.toUpperCase()}</span>
+                            <div className="setting-controls">
+                                <label className="upload-btn">
+                                    Upload
+                                    <input
+                                        type="file"
+                                        accept="audio/*"
+                                        onChange={(e) => e.target.files?.[0] && handleFileChange(key as any, e.target.files[0])}
+                                        style={{ display: 'none' }}
+                                    />
+                                </label>
+                                {settings[key as keyof typeof settings] && (
+                                    <button onClick={() => handleClear(key as any)} className="clear-btn">Clear</button>
+                                )}
+                                <button onClick={() => playPreview(key)} className="preview-btn">▶️</button>
+                            </div>
+                            <span className="status">{settings[key as keyof typeof settings] ? 'Custom' : 'Default'}</span>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

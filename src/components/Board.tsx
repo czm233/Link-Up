@@ -18,8 +18,9 @@ export const Board: React.FC<BoardProps> = ({ grid, selectedTile, onTileClick, w
         <div
             className="board"
             style={{
-                gridTemplateColumns: `repeat(${width}, var(--tile-size))`,
-                gridTemplateRows: `repeat(${height}, var(--tile-size))`
+                // Include gap in the grid cell size to allow fuller click areas
+                gridTemplateColumns: `repeat(${width}, calc(var(--tile-size) + var(--tile-gap)))`,
+                gridTemplateRows: `repeat(${height}, calc(var(--tile-size) + var(--tile-gap)))`
             }}
         >
             {grid.map((row) => (

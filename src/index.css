@@ -1,15 +1,20 @@
 :root {
-  --bg-color: #1a1a1a;
-  --text-color: #ffffff;
-  --primary-color: #646cff;
-  --board-bg: #242424;
+  /* Dark Theme */
+  --bg-color: #1a1a1a;        /* Dark Background */
+  --text-color: #ffffff;      /* White Text */
+  --primary-color: #4caf50;   /* Green Accent */
+  --board-bg: #000000;        /* Black Board Background */
+  
   --tile-size: 40px;
   --tile-gap: 4px;
-  --tile-bg: #3a3a3a;
-  --tile-hover: #4a4a4a;
-  --tile-selected: #535bf2;
-  --accent-color: #ffcc00;
-  --danger-color: #ff4444;
+  
+  /* Tile Colors - Darkened for eye comfort */
+  --tile-bg: #424242;         /* Medium Dark Grey (Default) */
+  --tile-hover: #616161;      /* Slightly lighter on hover (if enabled) */
+  --tile-selected: #212121;   /* Very Dark Grey (Selected) - "Pressed" look */
+  
+  --accent-color: #ffd700;    /* Gold for accents */
+  --danger-color: #ff5252;    /* Red for danger */
 }
 
 * {
@@ -45,16 +50,26 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #333; /* Dark button bg */
+  color: var(--text-color);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s;
 }
 
 button:hover {
+  background-color: var(--primary-color);
   border-color: var(--primary-color);
+  color: white;
 }
 
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Disable button style */
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #222;
 }

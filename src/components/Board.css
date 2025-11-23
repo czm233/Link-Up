@@ -1,6 +1,6 @@
 .board {
     display: grid;
-    gap: var(--tile-gap);
+    gap: 0; /* Removed gap to expand click area */
     background-color: var(--board-bg);
     padding: 16px;
     border-radius: 12px;
