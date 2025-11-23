@@ -1,0 +1,97 @@
+.effects-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 20;
+    padding: 16px;
+    /* Match Board padding */
+    box-sizing: border-box;
+    /* We need to offset the SVG to match the grid content area if there's padding on Board */
+    /* Actually, if Board has padding, the grid starts inside. */
+    /* The EffectsLayer is a child of Board, so if we position it absolute 0,0 it covers the Board padding too. */
+    /* But the SVG viewBox 0..width corresponds to the grid cells. */
+    /* So we should match the grid area. */
+    /* Let's assume EffectsLayer is placed INSIDE the grid container? No, it's overlay. */
+    /* Best way: make EffectsLayer absolute inside the grid container (which is display:grid). */
+    /* But grid container has gaps. */
+    /* Let's adjust the component to be rendered INSIDE the board but absolute over the whole thing? */
+    /* Actually, if we put it inside Board (which has padding), top:0 left:0 is top-left of padding box. */
+    /* We want it to align with the grid cells. */
+    /* Let's just use the same padding in EffectsLayer or make Board not have padding and put padding in a wrapper. */
+    /* Current Board.css has padding: 16px. */
+}
+
+.effects-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.lightning-path {
+    fill: none;
+    stroke: var(--primary-color);
+    stroke-width: 0.15;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 0.2px var(--primary-color)) drop-shadow(0 0 0.5px #fff);
+    animation: flash 0.3s ease-out forwards;
+}
+
+.lightning-core {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 0.05;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.8;
+    animation: flash 0.3s ease-out forwards;
+}
+
+.flash-effect {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, #fff 0%, var(--primary-color) 50%, transparent 100%);
+    transform: translate(-50%, -50%);
+    animation: pop 0.4s ease-out forwards;
+}
+
+@keyframes flash {
+    0% {
+        opacity: 0;
+        stroke-dasharray: 0 100;
+    }
+
+    10% {
+        opacity: 1;
+        stroke-dasharray: 100 0;
+    }
+
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes pop {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
