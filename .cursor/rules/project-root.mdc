@@ -1,0 +1,46 @@
+---
+description: 此项目的全局上下文、技术栈和核心编码规范，每次回答问题前必须参考。
+globs: **/*.{ts,tsx,js,jsx}
+alwaysApply: true
+---
+
+# 项目核心上下文
+- **项目名称**: Link-Up (连连看游戏)
+- **架构模式**: Component-Logic Separation (组件-逻辑分离架构)
+- **主要技术栈**: 
+  - React 19.2.0 (最新版)
+  - TypeScript 5.9.3 (严格模式)
+  - Vite 7.2.4 (构建工具)
+  - 标准 CSS (无CSS框架)
+  - Web Audio API (音频管理)
+
+# 必须遵守的编码规范 (Hard Rules)
+1. **组件定义**: 严格使用 `React.FC<Props>` 定义函数式组件，Props必须有明确的Interface定义
+2. **导出规范**: 使用具名导出 `export const ComponentName`，避免默认导出
+3. **类型安全**: 禁止使用 `any` 类型，所有数据结构必须有明确的TypeScript接口定义
+4. **架构分层**: UI组件(src/components)与业务逻辑(src/logic)严格分离，组件只负责展示和用户交互
+5. **状态管理**: 使用React的useState/useEffect管理局部状态，没有使用全局状态管理库
+6. **样式导入**: 每个组件使用独立的CSS文件，通过 `import './ComponentName.css'` 导入
+7. **文档注释**: 核心逻辑函数必须使用JSDoc风格注释说明参数、返回值和功能
+
+# 严禁出现的反模式 (Anti-patterns)
+- **禁止使用内联style属性** (除非必要的动态样式，如grid-template-columns)
+- **禁止使用any类型** (所有类型必须明确定义)
+- **禁止在组件中直接实现复杂算法** (必须抽离到logic层)
+- **禁止省略依赖数组** (useEffect必须有明确的依赖)
+- **禁止混用导出方式** (统一使用具名导出)
+- **禁止违反React Hooks规则** (条件渲染中不能调用Hook)
+
+# 代码风格特征 (Code Style)
+- **命名规范**: 组件PascalCase，函数camelCase，常量UPPER_SNAKE_CASE
+- **缩进**: 使用4个空格缩进
+- **分号**: 语句结尾使用分号
+- **引号**: 优先使用单引号，JSX属性使用双引号
+- **TypeScript**: strict模式开启，包括noUnusedLocals和noUnusedParameters
+
+# 项目特殊约定
+- **网格系统**: 使用带padding的二维数组表示游戏网格，边界为null
+- **坐标系统**: (x,y)从左上角开始，包含1个单位的padding偏移
+- **路径算法**: 最多允许2个转弯的BFS寻路
+- **音频系统**: 单例模式AudioManager，支持自定义音效和合成音效
+- **组合系统**: 5秒内连续消除计入combo，有特殊音效里程碑

@@ -24,6 +24,13 @@
     z-index: 10;
 }
 
+.tile.matched {
+    opacity: 0.3;
+    transform: scale(0.9);
+    pointer-events: none;
+    filter: grayscale(100%);
+}
+
 .tile.empty {
     background-color: transparent;
     cursor: default;

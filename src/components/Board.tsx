@@ -10,9 +10,10 @@ interface BoardProps {
     width: number;
     height: number;
     children?: React.ReactNode; // For EffectsLayer
+    lockedTiles?: Set<string>;
 }
 
-export const Board: React.FC<BoardProps> = ({ grid, selectedTile, onTileClick, width, height, children }) => {
+export const Board: React.FC<BoardProps> = ({ grid, selectedTile, onTileClick, width, height, children, lockedTiles }) => {
     return (
         <div
             className="board"
@@ -27,6 +28,7 @@ export const Board: React.FC<BoardProps> = ({ grid, selectedTile, onTileClick, w
                         key={tile ? tile.id : `empty-${x}-${grid.indexOf(row)}`}
                         tile={tile}
                         isSelected={selectedTile?.id === tile?.id}
+                        isMatched={tile ? lockedTiles?.has(tile.id) : false}
                         onClick={() => tile && onTileClick(tile)}
                     />
                 ))

@@ -3,7 +3,7 @@ import { type Grid, type Tile as TileType, createGrid, createGridFromMap, type P
 import { findPath } from '../logic/pathfinding';
 import { checkSolvability, getHint, shuffleGrid } from '../logic/mechanics';
 import { Board } from './Board';
-import { EffectsLayer } from './EffectsLayer';
+import { EffectsLayer, type ActiveEffect } from './EffectsLayer';
 import { audioManager } from '../logic/audioManager';
 import './Game.css';
 
@@ -11,6 +11,7 @@ const GRID_WIDTH = 8;
 const GRID_HEIGHT = 10;
 const TILE_TYPES = ['🍎', '🍌', '🍇', '🍊', '🍓', '🍉', '🍒', '🍑', '🍍', '🥝', '🥑', '🍆'];
 const INITIAL_TIME = 30;
+const EFFECT_DURATION = 300;
 
 interface GameProps {
     mapData?: number[][];
@@ -20,17 +21,16 @@ interface GameProps {
 export const Game: React.FC<GameProps> = ({ mapData, onExit }) => {
     const [grid, setGrid] = useState<Grid>([]);
     const [selectedTile, setSelectedTile] = useState<TileType | null>(null);
-    const [path, setPath] = useState<Position[] | null>(null);
+    // activeEffects supports multiple simultaneous connections
+    const [activeEffects, setActiveEffects] = useState<ActiveEffect[]>([]);
+    // lockedTiles tracks tiles that are matched but waiting for animation to finish
+    const [lockedTiles, setLockedTiles] = useState<Set<string>>(new Set());
+    
     const [score, setScore] = useState(0);
     const [timeLeft, setTimeLeft] = useState(INITIAL_TIME);
     const [gameState, setGameState] = useState<'playing' | 'won' | 'lost'>('playing');
-    const [hint, setHint] = useState<[Position, Position] | null>(null);
     const [dimensions, setDimensions] = useState({ w: GRID_WIDTH + 2, h: GRID_HEIGHT + 2 });
     const [combo, setCombo] = useState(0);
-    // Use hint to avoid unused variable warning if we use it in render or logic
-    // Actually we use it in handleHint but we don't read it back except for clearing.
-    // We can use it to highlight tiles.
-    console.log(hint); // Temporary usage
 
     // Initialize game
     useEffect(() => {
@@ -50,19 +50,14 @@ export const Game: React.FC<GameProps> = ({ mapData, onExit }) => {
             newGrid = createGrid(GRID_WIDTH, GRID_HEIGHT, TILE_TYPES);
         }
         setGrid(newGrid);
-        // We need to store current dimensions to pass to Board
-        // But Board takes grid which has dimensions.
-        // Actually Board props width/height are for CSS grid columns.
-        // We should derive them from grid if possible or state.
-        // Let's add state for dimensions.
         setDimensions({ w: w + 2, h: h + 2 });
 
         setSelectedTile(null);
-        setPath(null);
+        setActiveEffects([]);
+        setLockedTiles(new Set());
         setScore(0);
         setTimeLeft(INITIAL_TIME);
         setGameState('playing');
-        setHint(null);
         setCombo(0);
         audioManager.resetCombo();
     };
@@ -73,10 +68,13 @@ export const Game: React.FC<GameProps> = ({ mapData, onExit }) => {
 
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
-                if (prev <= 1) {
+                if (prev <= 0.1) { // Use smaller threshold for smoother bar
                     setGameState('lost');
                     return 0;
                 }
+                // Decrease by 0.1s for smoother progress bar updates if we wanted, 
+                // but 1s is fine for now. Let's stick to integer seconds for logic but maybe higher freq for UI?
+                // Stick to 1s logic for consistency with original code, but check regularly.
                 return prev - 1;
             });
         }, 1000);
@@ -90,26 +88,41 @@ export const Game: React.FC<GameProps> = ({ mapData, onExit }) => {
 
         // Check if board is empty (Win)
         const isEmpty = grid.every(row => row.every(tile => tile === null));
-        if (isEmpty) {
+        if (isEmpty && lockedTiles.size === 0 && activeEffects.filter(e => e.type !== 'hint').length === 0) {
             setGameState('won');
             return;
         }
 
         // Check solvability
+        // Only check if not currently animating everything away
+        // Ignore hints when checking if we should act
+        const activeMatchEffects = activeEffects.filter(e => e.type !== 'hint');
         if (!checkSolvability(grid)) {
+            // If we have locked tiles, the grid might become solvable after they disappear?
+            // Or if grid is effectively empty but we are waiting for animation.
+            // Let's wait until animations settle if we are not sure.
+            if (activeMatchEffects.length > 0) return;
+
             // Auto shuffle
             console.log("No moves possible, shuffling...");
-            // Add a small delay or visual cue could be nice
             setTimeout(() => {
                 setGrid(prev => shuffleGrid(prev));
             }, 500);
         }
-    }, [grid, gameState]);
+    }, [grid, gameState, lockedTiles.size, activeEffects.length]); // activeEffects.length includes hints but that's okay
 
-
+    const clearHints = () => {
+        setActiveEffects(prev => prev.filter(e => e.type !== 'hint'));
+    };
 
     const handleTileClick = (tile: TileType) => {
         if (gameState !== 'playing') return;
+        
+        // Ignore clicks on tiles that are already matched (locked)
+        if (lockedTiles.has(tile.id)) return;
+
+        // Clear any existing hints on interaction
+        clearHints();
 
         // If clicking same tile, deselect
         if (selectedTile?.id === tile.id) {
@@ -121,36 +134,77 @@ export const Game: React.FC<GameProps> = ({ mapData, onExit }) => {
         // If no tile selected, select this one
         if (!selectedTile) {
             setSelectedTile(tile);
-            setHint(null);
             audioManager.playClick();
             return;
         }
 
-        // If matching type
-        if (selectedTile.type === tile.type) {
+        // Check match
+        const isSameType = selectedTile.type === tile.type;
+        
+        if (isSameType) {
             const start = { x: selectedTile.x, y: selectedTile.y };
             const end = { x: tile.x, y: tile.y };
             const foundPath = findPath(start, end, grid);
 
             if (foundPath) {
                 // Match found!
-                setPath(foundPath);
+                const effectId = `${Date.now()}-${Math.random()}`;
+                const newEffect: ActiveEffect = {
+                    id: effectId,
+                    path: foundPath,
+                    startTime: Date.now(),
+                    type: 'match'
+                };
+
+                // 1. Add effect
+                setActiveEffects(prev => [...prev, newEffect]);
+                
+                // 2. Lock tiles immediately to prevent interaction
+                const tileId1 = selectedTile.id;
+                const tileId2 = tile.id;
+                setLockedTiles(prev => {
+                    const next = new Set(prev);
+                    next.add(tileId1);
+                    next.add(tileId2);
+                    return next;
+                });
+
+                // 3. Play sound & update score
                 const currentCombo = audioManager.playMatch();
                 setCombo(currentCombo);
+                setScore(prev => prev + 100 + (currentCombo > 1 ? currentCombo * 10 : 0));
+                setTimeLeft(INITIAL_TIME); // Reset timer
 
-                // Remove tiles after delay
+                // 4. Clear selection immediately so user can continue
+                setSelectedTile(null);
+
+                // 5. Schedule removal
                 setTimeout(() => {
+                    // Update Grid: remove tiles
                     setGrid(prev => {
                         const newGrid = prev.map(row => [...row]);
-                        newGrid[start.y][start.x] = null;
-                        newGrid[end.y][end.x] = null;
+                        // Safe way: Check if the tile at [y][x] has the same ID.
+                        if (newGrid[start.y][start.x]?.id === tileId1) {
+                            newGrid[start.y][start.x] = null;
+                        }
+                        if (newGrid[end.y][end.x]?.id === tileId2) {
+                            newGrid[end.y][end.x] = null;
+                        }
                         return newGrid;
                     });
-                    setPath(null);
-                    setSelectedTile(null);
-                    setScore(prev => prev + 100 + (currentCombo > 1 ? currentCombo * 10 : 0));
-                    setTimeLeft(INITIAL_TIME); // Reset timer
-                }, 300);
+
+                    // Remove effect
+                    setActiveEffects(prev => prev.filter(e => e.id !== effectId));
+                    
+                    // Unlock tiles (though they are gone from grid now)
+                    setLockedTiles(prev => {
+                        const next = new Set(prev);
+                        next.delete(tileId1);
+                        next.delete(tileId2);
+                        return next;
+                    });
+                }, EFFECT_DURATION);
+
             } else {
                 // No path
                 setSelectedTile(tile);
@@ -164,24 +218,39 @@ export const Game: React.FC<GameProps> = ({ mapData, onExit }) => {
     };
 
     const handleHint = () => {
-        const hintPair = getHint(grid);
-        if (hintPair) {
-            setHint(hintPair);
-            // Highlight tiles? 
-            // For now, maybe just flash them or select one?
-            // Let's just set the first one as selected to help the user
-            const [p1] = hintPair;
-            const tile1 = grid[p1.y][p1.x];
-            if (tile1) setSelectedTile(tile1);
+        // Clear existing hints first
+        clearHints();
+        
+        const hintResult = getHint(grid);
+        if (hintResult) {
+            const { path } = hintResult;
+            
+            // Create a hint effect
+            const hintEffect: ActiveEffect = {
+                id: `hint-${Date.now()}`,
+                path: path,
+                startTime: Date.now(),
+                type: 'hint'
+            };
+            
+            setActiveEffects(prev => [...prev, hintEffect]);
+            
+            // Auto-remove hint after some time (e.g., 3 seconds)
+            setTimeout(() => {
+                setActiveEffects(prev => prev.filter(e => e.id !== hintEffect.id));
+            }, 3000);
         }
     };
 
     const handleReset = () => {
+        clearHints();
         setGrid(prev => shuffleGrid(prev));
-        setHint(null);
         setSelectedTile(null);
         audioManager.playShuffle();
     };
+
+    // Calculate progress bar percentage
+    const timePercentage = Math.max(0, Math.min(100, (timeLeft / INITIAL_TIME) * 100));
 
     return (
         <div className="game-container">
@@ -190,7 +259,7 @@ export const Game: React.FC<GameProps> = ({ mapData, onExit }) => {
                 <div className="score">Score: {score}</div>
                 {combo > 1 && <div className="combo-display">Combo x{combo}!</div>}
                 <div className={`timer ${timeLeft < 10 ? 'danger' : ''}`}>
-                    Time: {timeLeft}s
+                    {timeLeft}s
                 </div>
             </div>
 
@@ -201,25 +270,36 @@ export const Game: React.FC<GameProps> = ({ mapData, onExit }) => {
                     onTileClick={handleTileClick}
                     width={dimensions.w}
                     height={dimensions.h}
+                    lockedTiles={lockedTiles}
                 >
-                    <EffectsLayer path={path} width={dimensions.w} height={dimensions.h} />
+                    <EffectsLayer activeEffects={activeEffects} width={dimensions.w} height={dimensions.h} />
                 </Board>
 
                 {gameState !== 'playing' && (
                     <div className="game-overlay">
                         <div className="game-message">
                             {gameState === 'won' ? '🎉 You Won! 🎉' : '💀 Game Over 💀'}
+                            <div className="final-score">Final Score: {score}</div>
                             <button onClick={startNewGame}>Play Again</button>
                         </div>
                     </div>
                 )}
             </div>
+            
+            {/* Progress Bar */}
+            <div className="time-progress-container">
+                <div 
+                    className={`time-progress-bar ${timeLeft < 10 ? 'danger' : ''}`} 
+                    style={{ width: `${timePercentage}%` }}
+                />
+            </div>
 
             <div className="game-controls">
+                {/* Allow hint even if animations are playing, but maybe limit if already showing hint? */}
                 <button onClick={handleHint} disabled={gameState !== 'playing'}>
                     🧭 Hint
                 </button>
-                <button onClick={handleReset} disabled={gameState !== 'playing'}>
+                <button onClick={handleReset} disabled={gameState !== 'playing' || activeEffects.filter(e => e.type !== 'hint').length > 0}>
                     🔄 Shuffle
                 </button>
             </div>

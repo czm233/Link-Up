@@ -5,17 +5,18 @@ import './Tile.css';
 interface TileProps {
     tile: TileType | null;
     isSelected: boolean;
+    isMatched?: boolean;
     onClick: () => void;
 }
 
-export const Tile: React.FC<TileProps> = ({ tile, isSelected, onClick }) => {
+export const Tile: React.FC<TileProps> = ({ tile, isSelected, isMatched, onClick }) => {
     if (!tile) {
         return <div className="tile empty" />;
     }
 
     return (
         <div
-            className={`tile ${isSelected ? 'selected' : ''}`}
+            className={`tile ${isSelected ? 'selected' : ''} ${isMatched ? 'matched' : ''}`}
             onClick={onClick}
             style={{ gridColumn: tile.x + 1, gridRow: tile.y + 1 }}
         >

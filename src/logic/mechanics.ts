@@ -9,9 +9,10 @@ export function checkSolvability(grid: Grid): boolean {
 }
 
 /**
- * Returns a pair of positions that can be connected, or null if none.
+ * Returns a pair of positions that can be connected and the path between them, or null if none.
+ * Updated to return the path as well for visual hints.
  */
-export function getHint(grid: Grid): [Position, Position] | null {
+export function getHint(grid: Grid): { start: Position, end: Position, path: Position[] } | null {
     const tiles: Tile[] = [];
     const height = grid.length;
     const width = grid[0].length;
@@ -42,9 +43,10 @@ export function getHint(grid: Grid): [Position, Position] | null {
             for (let j = i + 1; j < group.length; j++) {
                 const start = { x: group[i].x, y: group[i].y };
                 const end = { x: group[j].x, y: group[j].y };
-
-                if (findPath(start, end, grid)) {
-                    return [start, end];
+                const path = findPath(start, end, grid);
+                
+                if (path) {
+                    return { start, end, path };
                 }
             }
         }

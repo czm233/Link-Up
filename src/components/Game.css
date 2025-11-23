@@ -66,6 +66,28 @@
     gap: 20px;
 }
 
+/* Progress Bar */
+.time-progress-container {
+    width: 100%;
+    max-width: 600px; /* Match board roughly */
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+
+.time-progress-bar {
+    height: 100%;
+    background-color: var(--primary-color);
+    transition: width 1s linear, background-color 0.3s;
+}
+
+.time-progress-bar.danger {
+    background-color: var(--danger-color);
+}
+
 @keyframes pulse {
     0% {
         opacity: 1;
