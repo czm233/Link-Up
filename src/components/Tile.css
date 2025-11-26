@@ -5,11 +5,11 @@
     /* Distribute gap as padding around the content */
     padding: calc(var(--tile-gap) / 2);
     box-sizing: border-box;
-    
+
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: default; 
+    cursor: default;
     user-select: none;
     background-color: transparent;
     border-radius: 0;
@@ -18,28 +18,32 @@
 .tile-visual {
     width: 100%;
     height: 100%;
-    background-color: var(--tile-bg); /* Light Grey */
+    background-color: var(--tile-bg);
+    /* Light Grey */
     border-radius: 8px;
     display: flex;
     justify-content: center;
     align-items: center;
-    
+
     /* Flat Design - No 3D shadow or offset */
     box-shadow: none;
     position: relative;
     top: 0;
-    
-    transition: background-color 0.05s ease-out; /* Only color transition */
-    
+
+    transition: background-color 0.05s ease-out;
+    /* Only color transition */
+
     /* Increased emoji size to fill more space (from 0.6 to 0.8) */
     font-size: calc(var(--tile-size) * 0.8);
-    line-height: 1; /* Ensure line-height doesn't add extra spacing */
-    overflow: hidden; 
+    line-height: 1;
+    /* Ensure line-height doesn't add extra spacing */
+    overflow: hidden;
 }
 
 /* PRESSED STATE (Selected) */
 .tile-visual.selected {
-    background-color: var(--tile-selected); /* Dark Grey */
+    background-color: var(--tile-selected);
+    /* Dark Grey */
     /* No movement, no shadow change, just color */
     transform: none;
     box-shadow: none;
@@ -47,9 +51,12 @@
 
 /* MATCHED STATE (Elimination) */
 .tile-visual.matched {
-    background-color: var(--tile-selected); /* Keep dark grey */
-    opacity: 0; /* Fade out */
-    transform: scale(0.9); /* Slight shrink for exit effect */
+    background-color: var(--tile-selected);
+    /* Keep dark grey */
+    opacity: 0;
+    /* Fade out */
+    transform: scale(0.9);
+    /* Slight shrink for exit effect */
     transition: opacity 0.2s ease-in, transform 0.2s ease-in;
 }
 
@@ -64,4 +71,72 @@
 
 .tile-content {
     pointer-events: none;
+}
+
+/* 图片类型的方块样式 */
+.tile-image {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+    image-rendering: -webkit-optimize-contrast;
+    /* 优化图片渲染质量 */
+}
+
+/* ========== 怀旧模式方块样式 ========== */
+.nostalgic-tile {
+    position: relative;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* 方块底座 */
+.tile-block {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    pointer-events: none;
+}
+
+/* sprite sheet 图标 */
+.tile-sprite-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-repeat: no-repeat;
+    pointer-events: none;
+    image-rendering: pixelated;
+    /* 保持像素风格 */
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+/* 怀旧模式独立图标 */
+.tile-nostalgic-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    pointer-events: none;
+    image-rendering: -webkit-optimize-contrast;
+}
+
+/* 选中边框 */
+.tile-select-border {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 10;
 }

@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { type Grid, type Tile as TileType, createGrid, createGridFromMap, type Position } from '../logic/core';
+import { type Grid, type Tile as TileType, createGrid, createGridFromMap } from '../logic/core';
 import { findPath } from '../logic/pathfinding';
 import { checkSolvability, getHint, shuffleGrid } from '../logic/mechanics';
 import { Board } from './Board';
 import { EffectsLayer, type ActiveEffect } from './EffectsLayer';
 import { audioManager } from '../logic/audioManager';
+import { themeManager } from '../logic/themeManager';
+import { type GameMode, getModeConfig } from '../logic/gameMode';
 import { SimpleLineChart } from './SimpleLineChart';
 import './Game.css';
+import './NostalgicMode.css';
 
 const GRID_WIDTH = 8;
 const GRID_HEIGHT = 10;
-const TILE_TYPES = ['🍎', '🍌', '🍇', '🍊', '🍓', '🍉', '🍒', '🍑', '🍍', '🥝', '🥑', '🍆'];
 const INITIAL_TIME = 30;
 const EFFECT_DURATION = 300;
 
 interface GameProps {
     mapData?: number[][];
     onExit: () => void;
+    themeId?: string; // 当前主题 ID，变化时重新开始游戏
+    gameMode?: GameMode; // 游戏模式
 }
 
 interface GameStats {
@@ -41,7 +45,9 @@ const INITIAL_STATS: GameStats = {
     matchHistory: []
 };
 
-export const Game: React.FC<GameProps> = ({ mapData, onExit }) => {
+export const Game: React.FC<GameProps> = ({ mapData, onExit, themeId, gameMode = 'normal' }) => {
+    // 获取当前模式的配置
+    const modeConfig = getModeConfig(gameMode);
     const [grid, setGrid] = useState<Grid>([]);
     const [selectedTile, setSelectedTile] = useState<TileType | null>(null);
     const [activeEffects, setActiveEffects] = useState<ActiveEffect[]>([]);
@@ -60,19 +66,22 @@ export const Game: React.FC<GameProps> = ({ mapData, onExit }) => {
 
     useEffect(() => {
         startNewGame();
-    }, [mapData]);
+    }, [mapData, themeId]);
 
     const startNewGame = () => {
         let newGrid;
         let w = GRID_WIDTH;
         let h = GRID_HEIGHT;
 
+        // 从主题管理器获取当前的 tile 类型
+        const tileTypes = themeManager.getTileTypes();
+
         if (mapData) {
-            newGrid = createGridFromMap(mapData, TILE_TYPES);
+            newGrid = createGridFromMap(mapData, tileTypes);
             w = mapData[0].length;
             h = mapData.length;
         } else {
-            newGrid = createGrid(GRID_WIDTH, GRID_HEIGHT, TILE_TYPES);
+            newGrid = createGrid(GRID_WIDTH, GRID_HEIGHT, tileTypes);
         }
         setGrid(newGrid);
         setDimensions({ w: w + 2, h: h + 2 });
@@ -311,7 +320,7 @@ export const Game: React.FC<GameProps> = ({ mapData, onExit }) => {
     const accuracyData = stats.accuracyHistory.map(a => ({ x: a.time, y: a.accuracy }));
 
     return (
-        <div className="game-container">
+        <div className={`game-container ${modeConfig.cssClass}`}>
             <div className="game-header">
                 <button onClick={onExit} className="exit-btn">🏠</button>
                 <div className="score">Score: {score}</div>
@@ -336,6 +345,8 @@ export const Game: React.FC<GameProps> = ({ mapData, onExit }) => {
                     width={dimensions.w}
                     height={dimensions.h}
                     lockedTiles={lockedTiles}
+                    isImageTheme={themeManager.isImageTheme()}
+                    spriteConfig={themeManager.getSpriteConfig()}
                 >
                     <EffectsLayer activeEffects={activeEffects} width={dimensions.w} height={dimensions.h} />
                 </Board>

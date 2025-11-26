@@ -1,0 +1,230 @@
+/**
+ * 怀旧模式专属样式
+ * 还原经典连连看的蓝色界面风格
+ */
+
+/* ========== 怀旧模式游戏容器 ========== */
+.game-container.mode-nostalgic {
+    background-image: url('/nostalgic/bg.png?v=1');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-color: #1a1a1a;
+    border-radius: 0;
+    padding: 20px;
+    min-height: 100vh;
+    box-shadow: none;
+    border: none;
+    --tile-gap: 0px;
+    --tile-size: 55px;
+    width: 100%;
+    max-width: 1920px;
+    height: 100vh;
+    /* Ensure full height for cover */
+    position: relative;
+    /* For absolute positioning of children */
+
+    /* Alignment Variables - Adjust these to move the board */
+    --board-x: 50%;
+    --board-y: 50%;
+    --board-scale: 1;
+}
+
+/* Position the board container absolutely */
+.game-container.mode-nostalgic .board-container {
+    position: absolute;
+    left: var(--board-x);
+    top: var(--board-y);
+    transform: translate(-50%, -50%) scale(var(--board-scale));
+    width: auto;
+    /* Let content define width */
+    height: auto;
+}
+
+
+/* ========== 怀旧模式 Header ========== */
+.game-container.mode-nostalgic .game-header {
+    background: linear-gradient(180deg, #7CB5E8 0%, #5A9BD4 100%);
+    border: 2px solid #3A7AB8;
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: #1A3A5C;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+    font-family: 'SimHei', 'Microsoft YaHei', sans-serif;
+}
+
+.game-container.mode-nostalgic .score {
+    color: #1A3A5C;
+    font-weight: bold;
+}
+
+.game-container.mode-nostalgic .timer {
+    color: #1A3A5C;
+    font-weight: bold;
+}
+
+.game-container.mode-nostalgic .timer.danger {
+    color: #CC3333;
+    animation: nostalgic-pulse 0.5s infinite;
+}
+
+@keyframes nostalgic-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* ========== 怀旧模式返回按钮 ========== */
+.game-container.mode-nostalgic .exit-btn {
+    background: linear-gradient(180deg, #7CB5E8 0%, #5A9BD4 100%);
+    border: 2px solid #3A7AB8;
+    border-radius: 6px;
+    color: #1A3A5C;
+    font-size: 1.1rem;
+    padding: 6px 12px;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.game-container.mode-nostalgic .exit-btn:hover {
+    background: linear-gradient(180deg, #8EC5F8 0%, #6AABE4 100%);
+}
+
+/* ========== 怀旧模式 Combo 显示 ========== */
+.game-container.mode-nostalgic .combo-display {
+    color: #FFD700;
+    text-shadow:
+        0 0 10px #FFD700,
+        2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-family: 'Impact', sans-serif;
+}
+
+/* ========== 怀旧模式进度条 ========== */
+.game-container.mode-nostalgic .time-progress-container {
+    background: url('/nostalgic/progress_bar.jpg') left center / auto 100% repeat-x;
+    border: 2px solid #3A7AB8;
+    border-radius: 4px;
+    height: 16px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    position: relative;
+}
+
+.game-container.mode-nostalgic .time-progress-bar {
+    background: linear-gradient(180deg, #7DD8FF 0%, #3BB8E8 50%, #2A98C8 100%);
+    height: 100%;
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(100, 200, 255, 0.5);
+}
+
+.game-container.mode-nostalgic .time-progress-bar.danger {
+    background: linear-gradient(180deg, #FF9966 0%, #FF6633 50%, #CC3300 100%);
+    box-shadow: 0 0 8px rgba(255, 100, 50, 0.5);
+}
+
+/* ========== 怀旧模式控制按钮 ========== */
+.game-container.mode-nostalgic .game-controls {
+    gap: 15px;
+}
+
+.game-container.mode-nostalgic .game-controls button {
+    background: linear-gradient(180deg, #7CB5E8 0%, #5A9BD4 100%);
+    border: 2px solid #3A7AB8;
+    border-radius: 8px;
+    color: #1A3A5C;
+    font-family: 'SimHei', 'Microsoft YaHei', sans-serif;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+    padding: 10px 20px;
+    font-size: 1rem;
+    transition: all 0.15s ease;
+}
+
+.game-container.mode-nostalgic .game-controls button:hover:not(:disabled) {
+    background: linear-gradient(180deg, #8EC5F8 0%, #6AABE4 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.game-container.mode-nostalgic .game-controls button:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: none;
+}
+
+.game-container.mode-nostalgic .game-controls button:disabled {
+    background: linear-gradient(180deg, #A0A0A0 0%, #808080 100%);
+    border-color: #606060;
+    color: #505050;
+    text-shadow: none;
+}
+
+/* ========== 怀旧模式棋盘样式 ========== */
+.game-container.mode-nostalgic .board {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 12px;
+}
+
+/* ========== 怀旧模式方块样式（在 Tile.css 中覆盖） ========== */
+.game-container.mode-nostalgic .tile-visual.nostalgic-tile {
+    background: transparent;
+}
+
+/* ========== 怀旧模式游戏结束弹窗 ========== */
+.game-container.mode-nostalgic .game-overlay {
+    background: rgba(30, 60, 90, 0.95);
+}
+
+.game-container.mode-nostalgic .game-message {
+    background: linear-gradient(180deg, #6A9BC8 0%, #5A8BB8 50%, #4A7BA8 100%);
+    border: 3px solid #3A6090;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(100, 150, 200, 0.5);
+}
+
+.game-container.mode-nostalgic .game-message h2 {
+    color: #FFD700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-family: 'SimHei', 'Microsoft YaHei', sans-serif;
+}
+
+.game-container.mode-nostalgic .stats-grid {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid #3A6090;
+    border-radius: 8px;
+}
+
+.game-container.mode-nostalgic .stat-item span {
+    color: #B8D8F8;
+}
+
+.game-container.mode-nostalgic .stat-item strong {
+    color: #FFD700;
+}
+
+.game-container.mode-nostalgic .play-again-btn {
+    background: linear-gradient(180deg, #FFD700 0%, #FFA500 100%);
+    border: 2px solid #CC8800;
+    border-radius: 8px;
+    color: #5A3A00;
+    font-family: 'SimHei', 'Microsoft YaHei', sans-serif;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.game-container.mode-nostalgic .play-again-btn:hover {
+    background: linear-gradient(180deg, #FFE740 0%, #FFB520 100%);
+}
+
+/* ========== 怀旧模式图表样式 ========== */
+.game-container.mode-nostalgic .charts-grid {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+}

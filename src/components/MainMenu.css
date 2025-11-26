@@ -48,6 +48,20 @@
     color: var(--primary-color);
 }
 
+.menu-btn.nostalgic {
+    background: linear-gradient(180deg, #7CB5E8 0%, #5A9BD4 100%);
+    color: #1A3A5C;
+    border: 2px solid #3A7AB8;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+    font-weight: bold;
+    font-family: 'SimHei', 'Microsoft YaHei', sans-serif;
+}
+
+.menu-btn.nostalgic:hover {
+    background: linear-gradient(180deg, #8EC5F8 0%, #6AABE4 100%);
+    border-color: #4A8BC8;
+}
+
 .credits {
     margin-top: 40px;
     opacity: 0.6;

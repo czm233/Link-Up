@@ -1,5 +1,6 @@
 import React from 'react';
 import { type Grid, type Tile as TileType } from '../logic/core';
+import { type SpriteConfig } from '../logic/themeManager';
 import { Tile } from './Tile';
 import './Board.css';
 
@@ -11,9 +12,21 @@ interface BoardProps {
     height: number;
     children?: React.ReactNode; // For EffectsLayer
     lockedTiles?: Set<string>;
+    isImageTheme?: boolean; // 是否使用图片主题
+    spriteConfig?: SpriteConfig; // sprite sheet 配置
 }
 
-export const Board: React.FC<BoardProps> = ({ grid, selectedTile, onTileClick, width, height, children, lockedTiles }) => {
+export const Board: React.FC<BoardProps> = ({
+    grid,
+    selectedTile,
+    onTileClick,
+    width,
+    height,
+    children,
+    lockedTiles,
+    isImageTheme = false,
+    spriteConfig
+}) => {
     return (
         <div
             className="board"
@@ -30,6 +43,8 @@ export const Board: React.FC<BoardProps> = ({ grid, selectedTile, onTileClick, w
                         tile={tile}
                         isSelected={selectedTile?.id === tile?.id}
                         isMatched={tile ? lockedTiles?.has(tile.id) : false}
+                        isImageTheme={isImageTheme}
+                        spriteConfig={spriteConfig}
                         onClick={() => tile && onTileClick(tile)}
                     />
                 ))

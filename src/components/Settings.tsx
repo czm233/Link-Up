@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { audioManager } from '../logic/audioManager';
+import { themeManager, type TileTheme } from '../logic/themeManager';
 import './Settings.css';
 
 interface SettingsProps {
     onBack: () => void;
     tileSize: number;
     onTileSizeChange: (size: number) => void;
+    currentThemeId: string;
+    onThemeChange: (themeId: string) => void;
 }
 
-export const Settings: React.FC<SettingsProps> = ({ onBack, tileSize, onTileSizeChange }) => {
+export const Settings: React.FC<SettingsProps> = ({ onBack, tileSize, onTileSizeChange, currentThemeId, onThemeChange }) => {
     const [settings, setSettings] = useState(audioManager.getSettings());
+    const [themes] = useState<TileTheme[]>(themeManager.getAllThemes());
 
     const handleFileChange = (key: keyof typeof settings, file: File) => {
         const reader = new FileReader();
@@ -29,21 +33,9 @@ export const Settings: React.FC<SettingsProps> = ({ onBack, tileSize, onTileSize
     };
 
     const playPreview = (key: string) => {
-        switch (key) {
-            case 'click': audioManager.playClick(); break;
-            case 'shuffle': audioManager.playShuffle(); break;
-            case 'match': audioManager.playMatch(); break; // Note: this increments combo
-            case 'combo10':
-            case 'combo20':
-            case 'combo30':
-                // We can't easily preview combo sounds via playMatch without faking combo state.
-                // But audioManager exposes playBuffer privately.
-                // Let's just trigger a match and hope it plays if we set combo state?
-                // Actually, let's just rely on the user trusting it works or add a preview method to manager.
-                // For now, just playMatch is fine, it will play default if not set.
-                audioManager.playMatch();
-                break;
-        }
+        // Use previewSound for all sounds - it bypasses combo logic
+        // and directly plays the custom buffer if set, or falls back to synthesized default
+        audioManager.previewSound(key);
     };
 
     return (
@@ -58,11 +50,11 @@ export const Settings: React.FC<SettingsProps> = ({ onBack, tileSize, onTileSize
                 <div className="setting-item">
                     <span className="setting-label">Tile Size: {tileSize}px</span>
                     <div className="setting-controls slider-container">
-                        <input 
-                            type="range" 
-                            min="30" 
-                            max="80" 
-                            value={tileSize} 
+                        <input
+                            type="range"
+                            min="30"
+                            max="80"
+                            value={tileSize}
                             onChange={(e) => onTileSizeChange(parseInt(e.target.value, 10))}
                             className="slider"
                         />
@@ -70,6 +62,32 @@ export const Settings: React.FC<SettingsProps> = ({ onBack, tileSize, onTileSize
                     <div className="preview-tile" style={{ width: tileSize, height: tileSize }}>
                         🍎
                     </div>
+                </div>
+            </div>
+
+            <div className="settings-section">
+                <h3>Tile Theme</h3>
+                <div className="theme-list">
+                    {themes.map((theme) => (
+                        <div
+                            key={theme.id}
+                            className={`theme-item ${currentThemeId === theme.id ? 'selected' : ''}`}
+                            onClick={() => onThemeChange(theme.id)}
+                        >
+                            <div className="theme-preview">
+                                {theme.type === 'image' ? (
+                                    <img src={theme.preview} alt={theme.name} className="theme-preview-image" />
+                                ) : (
+                                    <span className="theme-preview-emoji">{theme.preview}</span>
+                                )}
+                            </div>
+                            <div className="theme-info">
+                                <span className="theme-name">{theme.name}</span>
+                                <span className="theme-count">{theme.tiles.length} 种图案</span>
+                            </div>
+                            {currentThemeId === theme.id && <span className="theme-check">✓</span>}
+                        </div>
+                    ))}
                 </div>
             </div>
 
